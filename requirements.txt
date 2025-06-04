@@ -1,0 +1,7 @@
+# Required third-party packages
+numpy
+pandas
+scikit-learn
+scipy
+matplotlib
+mpl_finance
