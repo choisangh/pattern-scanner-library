@@ -1,7 +1,10 @@
+"""Helper functions used across pattern modules."""
+
 import numpy as np
 
 
 def get_crosspt(x11, y11, x12, y12, x21, y21, x22, y22):   #교점 찾기
+    """Return intersection of two lines defined by points."""
     if x12==x11 or x22==x21:
         return np.nan, np.nan
     m1 = (y12 - y11) / (x12 - x11)

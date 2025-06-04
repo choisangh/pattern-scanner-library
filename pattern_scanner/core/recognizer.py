@@ -1,11 +1,14 @@
+"""Utilities for detecting candlestick patterns on time series data."""
+
 import pandas as pd
 import numpy as np
 from scipy.signal import argrelextrema
-from abstaract_pattern import AbstractPattern
+from .abstract import AbstractPattern
 
 
 
 class PatternRecognizer:
+    """Attach pattern detectors to candlestick data."""
     def __init__(self, window_size: int,
                  timestamp: pd.Series,
                  open_price: pd.Series,
@@ -13,15 +16,7 @@ class PatternRecognizer:
                  low_price: pd.Series,
                  close_price: pd.Series,
                  volume: pd.Series):
-        """
-        :param window_size:
-        :param timestamp:
-        :param open_price:
-        :param high_price:
-        :param low_price:
-        :param close_price:
-        :param volume:
-        """
+        """Preprocess data and instantiate pattern classes."""
         self.candle_df = self.make_candle_df(timestamp, open_price, high_price, low_price, close_price, volume)
         pattern_class_list = AbstractPattern.__subclasses__()
         self.zigzag_df = self.make_zigzag(window_size)
@@ -29,33 +24,19 @@ class PatternRecognizer:
             self.add_attribute(f'{pattern_class.__name__}', pattern_class(self.zigzag_df, self.candle_df))
 
     def add_attribute(self, name, value):
-        """
-        :param name:
-        :param value:
-        :return:
-        """
+        """Attach a pattern instance to this recognizer."""
         setattr(self.__class__, name, value)
 
     @staticmethod
     def get_pattern_list():
-        """
-        :return:
-        """
+        """Print available pattern class names."""
         print([f'{pattern_class.__name__}' for pattern_class in AbstractPattern.__subclasses__()])
 
     @staticmethod
     def make_candle_df(timestamp: pd.Series, openprice: pd.Series,
                        highprice: pd.Series, lowprice: pd.Series,
                        closeprice: pd.Series, volume: pd.Series):
-        """
-        :param timestamp:
-        :param openprice:
-        :param highprice:
-        :param lowprice:
-        :param closeprice:
-        :param volume:
-        :return:
-        """
+        """Combine series into a single DataFrame used for scanning."""
         candle_df = pd.concat([timestamp, openprice,
                                highprice, lowprice,
                                closeprice, volume], axis=1)
@@ -64,11 +45,7 @@ class PatternRecognizer:
 
     @staticmethod
     def processing_max_min(prices: pd.DataFrame, order: int) -> pd.DataFrame:  # 최대 최소값 찾기 (꼭지점)
-        """
-        :param prices:
-        :param order:
-        :return:
-        """
+        """Return local extrema used to create zigzag points."""
         window_range = 1
         prices['t'] = pd.to_datetime(prices['timestamp'])
         prices = prices.sort_values('timestamp')
@@ -98,10 +75,7 @@ class PatternRecognizer:
 
     @staticmethod
     def processing__zigzag(max_min: pd.DataFrame) -> pd.DataFrame:
-        """
-        :param max_min:
-        :return:
-        """
+        """Filter alternating highs and lows to form zigzag segments."""
         del_list = []
         for i in range(max_min.shape[0] - 1):
             if (np.isnan(max_min.iloc[i, 0]) is False) and (np.isnan(max_min.iloc[i + 1, 0]) is False):
@@ -137,10 +111,7 @@ class PatternRecognizer:
         return zigzag_df
 
     def make_zigzag(self, window_size: int):
-        """
-        :param window_size:
-        :return:
-        """
+        """Generate zigzag points based on a detection window."""
         max_min = self.processing_max_min(self.candle_df, window_size)
         zigzag = self.processing__zigzag(max_min)
         return zigzag

@@ -1,7 +1,9 @@
+"""Base class defining the interface for candlestick pattern detection."""
+
 from abc import *
 import numpy as np
 import pandas as pd
-from util import get_crosspt
+from .util import get_crosspt
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -11,6 +13,7 @@ from mpl_finance import candlestick_ohlc
 
 
 class AbstractPattern(metaclass=ABCMeta):
+    """Base class for all candlestick chart patterns."""
     name = '패턴 이름'
     start_price = '지그재그 시작점의 가격타입(고가/저가)'
     pattern_type = '보조선타입(일직선 :0 / 상방하방형 :1)'
@@ -19,6 +22,7 @@ class AbstractPattern(metaclass=ABCMeta):
     test = 'test'
 
     def get_second_price(self):
+        """Return the alternate price type used for odd/even zigzag points."""
         second_price = 'low'
         if self.start_price == 'low':
             second_price = 'high'
@@ -26,17 +30,21 @@ class AbstractPattern(metaclass=ABCMeta):
 
     @abstractmethod
     def check_point_condition(self, point_value_list: list):
+        """Return True if price points satisfy the specific pattern shape."""
         pass
 
     @abstractmethod
     def check_time_condition(self, window: pd.DataFrame):
+        """Return True if the time spans between points are valid."""
         pass
 
     @abstractmethod
     def check_auxiliary_line_condition(self, p: pd.DataFrame, window: pd.DataFrame):
+        """Return True if additional line conditions for the pattern are met."""
         pass
 
     def check_pattern(self):
+        """Scan the zigzag points and return detected pattern information."""
         zigzag_point = self.zigzag_df
 
         p = [''] * self.point_num
@@ -81,6 +89,7 @@ class AbstractPattern(metaclass=ABCMeta):
         return pattern_list
 
     def make_plot(self):
+        """Visualize detected patterns using candlestick and volume charts."""
         pattern_list = self.check_pattern()
         df = self.candle_df
         for pattern in pattern_list[:]:
