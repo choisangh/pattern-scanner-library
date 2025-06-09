@@ -35,7 +35,10 @@ recognizer = PatternRecognizer(
 recognizer.get_pattern_list()
 # detect specific pattern
 patterns = recognizer.HeadAndShoulders.check_pattern()
+# make plot
+recognizer.HeadAndShoulders.make_plot()
 ```
+![image](https://github.com/user-attachments/assets/a3ed6d2f-26d6-460b-b8f1-5b1b8902d41c)
 
 ## Running Tests
 Execute the unit tests with:
